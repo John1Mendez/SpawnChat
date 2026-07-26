@@ -150,17 +150,7 @@ G2L.SendBtn.ImageColor3 = Color3.fromRGB(255, 255, 255) -- Cor alterada de azul 
 G2L.SendBtn.Parent = G2L.BottomArea
 
 -- LOGICA DE MENSAGENS E BUBBLE
-local BubbleCooldown = {}
 local function MostrarBubbleChat(username, message)
-    if BubbleCooldown[username] then
-        return
-    end
-
-    BubbleCooldown[username] = true
-
-    task.delay(1, function()
-        BubbleCooldown[username] = nil
-    end)
     local targetPlayer = Players:FindFirstChild(username)
     if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
         ChatService:Chat(targetPlayer.Character.Head, message, Enum.ChatColor.White)
@@ -195,9 +185,8 @@ end
 
 -- SISTEMA DE REDE COM RECONEXÃO AUTOMÁTICA
 local socket
-local wsUrl = "wss://free.blr2.piesocket.com/v3/1?api_key=nJwrvMLQ39lJLpcxH88UbwiV08uXKrqSV7zvC1Z4&notify_self=0"
+local wsUrl = "wss://free.blr2.piesocket.com/v3/1?api_key=nJwrvMLQ39lJLpcxH88UbwiV08uXKrqSV7zvC1Z4&notify_self=1"
 local running = true
-local MensagensRecebidas = {}
 
 local function ConnectWebSocket()
     if not running then return end
@@ -214,18 +203,6 @@ local function ConnectWebSocket()
             if not running then return end
             local ok, data = pcall(function() return HttpService:JSONDecode(msg) end)
             if ok and data.message then
-                local ID = data.username .. ":" .. data.message
-
-                if MensagensRecebidas[ID] then
-                    return
-                end
-
-                MensagensRecebidas[ID] = true
-
-                task.delay(2, function()
-                    MensagensRecebidas[ID] = nil
-                end)
-
                 local dName = data.nickname or data.username
                 AdicionarMensagem(data.username, dName, data.message, data.username == Player.Name)
             end
